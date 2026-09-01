@@ -90,10 +90,25 @@ with tab_evaluar:
     with st.form("form_evaluacion", clear_on_submit=True):
         jurado = st.text_input("Nombre del Jurado Evaluador:")
         emprendimiento = st.selectbox("Seleccione el Emprendimiento:", [
-            "Emprendimiento 1",
-            "Emprendimiento 2",
-            "Emprendimiento 3",
-            "Emprendimiento 4"
+            "Grupo 1 - KAIRÓS",
+            "Grupo 2 - 4PATYS",
+            "Grupo 3 - BIOSTICK",
+            "Grupo 4 - DELICIA",
+            "Grupo 5 - MY KEY",
+            "Grupo 6 - SUEÑO DECORADO",
+            "Grupo 7 - CHATARREROS",
+            "Grupo 8 - RED LILY",
+            "Grupo 9 - TENTACIÓN EXTREMA",
+            "Grupo 10 - EL RINCON DE LA MADERA",
+            "Grupo 11 - ARTE EN MASA",
+            "Grupo 12 - REMELOCOS",
+            "Grupo 13 - BATIPOWER",
+            "Grupo 14 - DELICIAS SALUDABLES",
+            "Grupo 15 - MAKEUP LAIMIL",
+            "Grupo 16 - ECOFLOWERS",
+            "Grupo 17 - ASTERIA",
+            "Grupo 18 - GOATS",
+            "Grupo 19 - EL RINCÓN DE MYA"
         ])
         
         respuestas = {}
