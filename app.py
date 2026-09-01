@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 st.title("📋 Evaluación de Emprendimientos")
-st.caption("Feria de Proyectos de 5to Año")
+st.caption("Exposición de Proyectos de 5to Año")
 
 # Conexión con Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
@@ -21,56 +21,56 @@ def cargar_datos():
     except Exception:
         return pd.DataFrame()
 
-# Mapeo exacto de Criterios, Porcentajes y Subcriterios según imagen
+# Estructura con las ponderaciones y subcriterios exactos
 ESTRUCTURA_RUBRICA = {
-    "Entrevista y presentación (10%)": {
-        "peso_categoria": 0.10,
+    "1. Presentación: Pitch, comunicación y defensa del proyecto (25%)": {
+        "peso_categoria": 0.25,
         "subcriterios": {
-            "S1_ClaridadExposicion": "1. Claridad en tema expuesto",
-            "S2_SeguridadDominio": "2. Seguridad y dominio del tema",
-            "S3_CreerIdea": "3. Proyecta creer en la idea de negocio"
+            "S1_PitchClaro": "a. Presentan un Pitch claro, organizado y atractivo.",
+            "S2_ComunicacionFluida": "b. Comunican las ideas de manera fluida y comprensible.",
+            "S3_SeguridadDominio": "c. Demuestran seguridad, convicción y dominio del emprendimiento.",
+            "S4_FundamentoDecisiones": "d. Fundamentan y justifican las decisiones tomadas.",
+            "S5_RecursosIdentidad": "e. Utilizan adecuadamente recursos visuales, identidad de marca (logo, paleta de colores) y prototipo/producto en el stand para reforzar la presentación."
         }
     },
-    "Idea de negocio e innovación (20%)": {
+    "2. Idea de negocio, innovación y propuesta de valor (20%)": {
         "peso_categoria": 0.20,
         "subcriterios": {
-            "S4_IdeaClaraCoherente": "4. Idea de negocio definida, clara y coherente",
-            "S5_ResuelveProblema": "5. La idea de negocio resuelve un problema o satisface una necesidad",
-            "S6_DiferenteExistente": "6. Ofrece algo diferente a lo existente en el mercado u ofrece adicionalidades significativas",
-            "S7_ValorAgregado": "7. El producto/servicio da beneficios o valor agregado al cliente y puede tener acogida en el mercado",
-            "S8_EntornoDesarrollo": "8. Idea de negocio coherente con el entorno donde se pretende desarrollar"
+            "S6_IdeaPropuestaValor": "a. Presentan claramente la idea de negocio y comunican con claridad su propuesta de valor.",
+            "S7_NecesidadReal": "b. Identifican una necesidad, problema u oportunidad real.",
+            "S8_RespuestaNecesidad": "c. Explican cómo su producto/servicio responde a esa necesidad.",
+            "S9_CreatividadInnovacion": "d. Demuestran creatividad e innovación.",
+            "S10_Diferenciación": "e. Identifican qué diferencia a su emprendimiento de otras propuestas."
         }
     },
-    "Mercadeo (20%)": {
-        "peso_categoria": 0.20,
-        "subcriterios": {
-            "S9_ClientesDefinidos": "9. Define quienes son y donde estan los clientes",
-            "S10_ProductosClaros": "10. Define con claridad los productos y servicios a vender",
-            "S11_IdentificaCompetencia": "11. Conocen e identifican a su competencia",
-            "S12_VentajasCompetitivas": "12. Presenta ventajas competitivas claras y definidas",
-            "S13_EstrategiasPublicidad": "13. Las estrategias de publicidad y promocion son claras y coherentes"
-        }
-    },
-    "Producción y administración (15%)": {
+    "3. Mercado y estrategia de comercialización (15%)": {
         "peso_categoria": 0.15,
         "subcriterios": {
-            "S14_ProcesoProduccion": "14. El proceso de producción del producto/servicio es claro y definido",
-            "S15_GeneracionEmpleo": "15. Tiene capacidad de generación de empleo directo y/o indirecto",
-            "S16_ImpactosPositivos": "16. Genera impactos económico, social y ambiental positivos en su entorno"
+            "S11_ClienteObjetivo": "a. Identifican claramente el cliente o público objetivo.",
+            "S12_NecesidadesCliente": "b. Reconocen las características y necesidades de sus potenciales clientes.",
+            "S13_AnalisisCompetencia": "c. Identifican competidores y reconocen fortalezas/debilidades frente a ellos.",
+            "S14_PromocionEstrategia": "d. Definen estrategias de promoción y comunicación (diseño de marca, logo y material publicitario digital/impreso).",
+            "S15_CanalesVenta": "e. Identifican canales de venta adecuados."
         }
     },
-    "Finanzas (20%)": {
-        "peso_categoria": 0.20,
+    "4. Planificación financiera y uso de Excel (25%)": {
+        "peso_categoria": 0.25,
         "subcriterios": {
-            "S17_CostosGastos": "17. Se han considerado todos los costos y gastos de operación",
-            "S18_InversionCoherente": "18. La inversión requerida es coherente con el negocio"
+            "S16_CostosFijosVariables": "a. Identifican y clasifican correctamente costos fijos y variables.",
+            "S17_PrecioVenta": "b. Determinan adecuadamente el precio de venta.",
+            "S18_InversionInicial": "c. Identifican la inversión/capital inicial necesario.",
+            "S19_PuntoEquilibrio": "d. Calculan correctamente el punto de equilibrio e interpretan qué representa.",
+            "S20_UsoExcelFormulas": "e. Utilizan correctamente las planillas de Excel, fórmulas y herramientas trabajadas, presentando la información financiera de forma clara y ordenada."
         }
     },
-    "Equipo de emprendedores (15%)": {
+    "5. Producción, gestión e impacto (15%)": {
         "peso_categoria": 0.15,
         "subcriterios": {
-            "S19_ExperienciaEquipo": "19. La experiencia y conocimientos del equipo de emprendedores es adecuada",
-            "S20_AporteFinanciero": "20. Hay aporte financiero y/o recursos de parte del grupo emprendedor"
+            "S21_ProcesoProduccion": "a. Explican claramente el proceso de producción o prestación del servicio.",
+            "S22_RecursosNecesarios": "b. Identifican los recursos necesarios para llevar adelante el emprendimiento.",
+            "S23_OrganizacionTareas": "c. Organizan adecuadamente tareas, tiempos y materiales.",
+            "S24_ImpactoEcoSocAmb": "d. Reconocen el impacto económico, social y/o ambiental de su propuesta.",
+            "S25_ResoluciónProblemas": "e. Demuestran capacidad para resolver dificultades y tomar decisiones."
         }
     }
 }
@@ -85,14 +85,15 @@ tab_evaluar, tab_historial, tab_dashboard = st.tabs([
 # PESTAÑA 1: EVALUAR
 # ---------------------------------------------------------
 with tab_evaluar:
-    st.info("Puntaje de 1 (Ausencia del factor) a 5 (Se cumple satisfactoriamente).")
+    st.info("Califique de 1 (Ausencia del factor / Muy flojo) a 5 (Cumple satisfactoriamente).")
     
     with st.form("form_evaluacion", clear_on_submit=True):
         jurado = st.text_input("Nombre del Jurado Evaluador:")
         emprendimiento = st.selectbox("Seleccione el Emprendimiento:", [
-            "Grupo 1 - Proyecto Alpha",
-            "Grupo 2 - Proyecto Beta",
-            "Grupo 3 - Proyecto Gamma"
+            "Emprendimiento 1",
+            "Emprendimiento 2",
+            "Emprendimiento 3",
+            "Emprendimiento 4"
         ])
         
         respuestas = {}
@@ -107,9 +108,9 @@ with tab_evaluar:
         
         if btn_enviar:
             if not jurado.strip():
-                st.error("⚠️ Ingrese su nombre de jurado.")
+                st.error("⚠️ Por favor, ingrese su nombre de jurado.")
             else:
-                # Cálculo de puntaje ponderado exacto
+                # Cálculo de puntaje ponderado exacto sobre 100 pts
                 puntaje_acumulado = 0.0
                 factores_criticos = 0
                 
@@ -122,12 +123,12 @@ with tab_evaluar:
                         val = respuestas[k]
                         if val <= 2:
                             factores_criticos += 1
-                        # Cada punto asignado (1 a 5) aporta proporcionalmente al % del criterio sobre 100
+                        # Cada punto asignado (1 a 5) aporta proporcionalmente a la categoría sobre 100
                         puntaje_acumulado += (val * (peso_categoria / cant_items) * 20)
                 
                 puntaje_total = round(puntaje_acumulado, 2)
                 
-                # Dictamen según tabla de instrucciones
+                # Dictamen oficial según la escala
                 if puntaje_total >= 90:
                     dictamen = "El esquema es muy bueno"
                 elif puntaje_total >= 75:
@@ -156,7 +157,7 @@ with tab_evaluar:
                 df_nuevo = pd.concat([df_actual, pd.DataFrame([nuevo_registro])], ignore_index=True)
                 conn.update(worksheet="Respuestas", data=df_nuevo)
                 
-                st.success(f"✅ Guardado. Puntaje: **{puntaje_total}/100** ({dictamen})")
+                st.success(f"✅ Evaluación guardada con éxito. Puntaje final: **{puntaje_total}/100 pts** ({dictamen})")
 
 # ---------------------------------------------------------
 # PESTAÑA 2: MODIFICAR / BORRAR
@@ -166,13 +167,13 @@ with tab_historial:
     df_reg = cargar_datos()
     
     if df_reg.empty or "ID" not in df_reg.columns:
-        st.write("Sin evaluaciones aún.")
+        st.write("Aún no hay evaluaciones registradas.")
     else:
-        st.dataframe(df_reg[["ID", "Jurado", "Emprendimiento", "Puntaje_Total", "Dictamen"]], use_container_width=True)
+        st.dataframe(df_reg[["ID", "Jurado", "Emprendimiento", "Puntaje_Total", "Dictamen", "Factores_Criticos"]], use_container_width=True)
         
         st.divider()
         opciones = df_reg.apply(lambda x: f"{x['ID']} - {x['Jurado']} ({x['Emprendimiento']})", axis=1).tolist()
-        sel = st.selectbox("Seleccione evaluación a corregir:", opciones)
+        sel = st.selectbox("Seleccione la evaluación a eliminar o corregir:", opciones)
         
         if sel:
             id_sel = sel.split(" - ")[0]
@@ -181,14 +182,14 @@ with tab_historial:
             if st.button("🗑️ Eliminar Registro", type="secondary"):
                 df_mod = df_reg.drop(idx).reset_index(drop=True)
                 conn.update(worksheet="Respuestas", data=df_mod)
-                st.warning("Registro borrado.")
+                st.warning("Registro borrado correctamente de Google Sheets.")
                 st.rerun()
 
 # ---------------------------------------------------------
 # PESTAÑA 3: RESULTADOS EN TIEMPO REAL
 # ---------------------------------------------------------
 with tab_dashboard:
-    st.subheader("🏆 Posiciones en Tiempo Real")
+    st.subheader("🏆 Ranking y Resultados en Tiempo Real")
     df_dash = cargar_datos()
     
     if not df_dash.empty and "Emprendimiento" in df_dash.columns:
@@ -196,7 +197,8 @@ with tab_dashboard:
         
         resumen = df_dash.groupby("Emprendimiento").agg(
             Promedio_Ponderado=("Puntaje_Total", "mean"),
-            Cant_Evaluaciones=("Jurado", "count")
+            Cant_Evaluaciones=("Jurado", "count"),
+            Total_Factores_Criticos=("Factores_Criticos", "sum")
         ).reset_index()
         
         resumen["Promedio_Ponderado"] = resumen["Promedio_Ponderado"].round(2)
