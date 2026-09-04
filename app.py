@@ -1,7 +1,8 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import uuid
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config(
     page_title="Evaluación Emprendimientos - 5to Año",
@@ -12,21 +13,40 @@ st.set_page_config(
 st.title("📋 Evaluación de Emprendimientos")
 st.caption("Exposición de Proyectos de 5to Año")
 
-# Cargar y formatear credenciales desde Streamlit Secrets
-creds_dict = dict(st.secrets["connections"]["gsheets"])
-if "private_key" in creds_dict:
-    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
-
-# Conexión pasándole las credenciales corregidas
-conn = st.connection("gsheets", type=GSheetsConnection, **creds_dict)
+# ---------------------------------------------------------
+# CONEXIÓN NATIVA A GOOGLE SHEETS
+# ---------------------------------------------------------
+@st.cache_resource
+def obtener_conexion_gsheets():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    
+    # Extraemos el diccionario de secretos y arreglamos la clave privada
+    secrets_dict = dict(st.secrets["connections"]["gsheets"])
+    if "private_key" in secrets_dict:
+        secrets_dict["private_key"] = secrets_dict["private_key"].replace("\\n", "\n")
+        
+    creds = Credentials.from_service_account_info(secrets_dict, scopes=scopes)
+    client = gspread.authorize(creds)
+    
+    # Abrir la planilla por URL limpia
+    url_sheet = secrets_dict["spreadsheet"]
+    sheet = client.open_by_url(url_sheet).worksheet("Respuestas")
+    return sheet
 
 def cargar_datos():
     try:
-        return conn.read(worksheet="Respuestas", ttl=0)
-    except Exception:
+        sheet = obtener_conexion_gsheets()
+        data = sheet.get_all_records()
+        return pd.DataFrame(data)
+    except Exception as e:
         return pd.DataFrame()
 
-# Estructura con las ponderaciones y subcriterios exactos
+# ---------------------------------------------------------
+# ESTRUCTURA DE LA RÚBRICA (25 Subcriterios)
+# ---------------------------------------------------------
 ESTRUCTURA_RUBRICA = {
     "1. Presentación: Pitch, comunicación y defensa del proyecto (25%)": {
         "peso_categoria": 0.25,
@@ -130,7 +150,6 @@ with tab_evaluar:
             if not jurado.strip():
                 st.error("⚠️ Por favor, ingrese su nombre de jurado.")
             else:
-                # Cálculo de puntaje ponderado exacto sobre 100 pts
                 puntaje_acumulado = 0.0
                 factores_criticos = 0
                 
@@ -143,12 +162,10 @@ with tab_evaluar:
                         val = respuestas[k]
                         if val <= 2:
                             factores_criticos += 1
-                        # Cada punto asignado (1 a 5) aporta proporcionalmente a la categoría sobre 100
                         puntaje_acumulado += (val * (peso_categoria / cant_items) * 20)
                 
                 puntaje_total = round(puntaje_acumulado, 2)
                 
-                # Dictamen oficial según la escala
                 if puntaje_total >= 90:
                     dictamen = "El esquema es muy bueno"
                 elif puntaje_total >= 75:
@@ -162,22 +179,23 @@ with tab_evaluar:
                 else:
                     dictamen = "Oportunidad muy baja"
                 
-                nuevo_registro = {
-                    "ID": str(uuid.uuid4())[:8],
-                    "Jurado": jurado.strip(),
-                    "Emprendimiento": emprendimiento,
-                    "Puntaje_Total": puntaje_total,
-                    "Dictamen": dictamen,
-                    "Factores_Criticos": factores_criticos,
-                    "Observaciones": observaciones,
-                    **respuestas
-                }
+                nuevo_registro = [
+                    str(uuid.uuid4())[:8],
+                    jurado.strip(),
+                    emprendimiento,
+                    puntaje_total,
+                    dictamen,
+                    factores_criticos,
+                    observaciones,
+                    *[respuestas[k] for k in respuestas]
+                ]
                 
-                df_actual = cargar_datos()
-                df_nuevo = pd.concat([df_actual, pd.DataFrame([nuevo_registro])], ignore_index=True)
-                conn.update(worksheet="Respuestas", data=df_nuevo)
-                
-                st.success(f"✅ Evaluación guardada con éxito. Puntaje final: **{puntaje_total}/100 pts** ({dictamen})")
+                try:
+                    sheet = obtener_conexion_gsheets()
+                    sheet.append_row(nuevo_registro)
+                    st.success(f"✅ Evaluación guardada con éxito. Puntaje final: **{puntaje_total}/100 pts** ({dictamen})")
+                except Exception as ex:
+                    st.error(f"Error al guardar los datos en Google Sheets: {ex}")
 
 # ---------------------------------------------------------
 # PESTAÑA 2: MODIFICAR / BORRAR
@@ -193,17 +211,20 @@ with tab_historial:
         
         st.divider()
         opciones = df_reg.apply(lambda x: f"{x['ID']} - {x['Jurado']} ({x['Emprendimiento']})", axis=1).tolist()
-        sel = st.selectbox("Seleccione la evaluación a eliminar o corregir:", opciones)
+        sel = st.selectbox("Seleccione la evaluación a eliminar:", opciones)
         
         if sel:
             id_sel = sel.split(" - ")[0]
-            idx = df_reg[df_reg["ID"] == id_sel].index[0]
-            
             if st.button("🗑️ Eliminar Registro", type="secondary"):
-                df_mod = df_reg.drop(idx).reset_index(drop=True)
-                conn.update(worksheet="Respuestas", data=df_mod)
-                st.warning("Registro borrado correctamente de Google Sheets.")
-                st.rerun()
+                try:
+                    sheet = obtener_conexion_gsheets()
+                    cell = sheet.find(id_sel)
+                    if cell:
+                        sheet.delete_rows(cell.row)
+                        st.warning("Registro borrado correctamente.")
+                        st.rerun()
+                except Exception as ex:
+                    st.error(f"No se pudo eliminar el registro: {ex}")
 
 # ---------------------------------------------------------
 # PESTAÑA 3: RESULTADOS EN TIEMPO REAL
@@ -214,6 +235,7 @@ with tab_dashboard:
     
     if not df_dash.empty and "Emprendimiento" in df_dash.columns:
         df_dash["Puntaje_Total"] = pd.to_numeric(df_dash["Puntaje_Total"], errors='coerce')
+        df_dash["Factores_Criticos"] = pd.to_numeric(df_dash["Factores_Criticos"], errors='coerce')
         
         resumen = df_dash.groupby("Emprendimiento").agg(
             Promedio_Ponderado=("Puntaje_Total", "mean"),
