@@ -12,7 +12,11 @@ st.set_page_config(
 st.title("📋 Evaluación de Emprendimientos")
 st.caption("Exposición de Proyectos de 5to Año")
 
-# Conexión con Google Sheets
+# Conexión con Google Sheets (Corrigiendo saltos de línea en la private_key)
+if "gsheets" in st.secrets and "private_key" in st.secrets["gsheets"]:
+    # Reemplaza los \n literales por saltos de línea reales
+    st.secrets["gsheets"]["private_key"] = st.secrets["gsheets"]["private_key"].replace("\\n", "\n")
+
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def cargar_datos():
