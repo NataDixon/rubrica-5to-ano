@@ -17,21 +17,25 @@ st.caption("Exposición de Proyectos de 5to Año")
 # CONEXIÓN NATIVA A GOOGLE SHEETS
 # ---------------------------------------------------------
 @st.cache_resource
+@st.cache_resource
 def obtener_conexion_gsheets():
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
     
-    # Extraemos el diccionario de secretos y arreglamos la clave privada
+    # Extraemos el diccionario de secretos y limpiamos a fondo la clave privada
     secrets_dict = dict(st.secrets["connections"]["gsheets"])
     if "private_key" in secrets_dict:
-        secrets_dict["private_key"] = secrets_dict["private_key"].replace("\\n", "\n")
+        pk = secrets_dict["private_key"]
+        # Limpia comillas escapadas, espacios y convierte \n de texto a saltos reales
+        pk = pk.replace("\\n", "\n").strip('"').strip("'").strip()
+        secrets_dict["private_key"] = pk
         
     creds = Credentials.from_service_account_info(secrets_dict, scopes=scopes)
     client = gspread.authorize(creds)
     
-    # Abrir la planilla por URL limpia
+    # Abrir la planilla por URL
     url_sheet = secrets_dict["spreadsheet"]
     sheet = client.open_by_url(url_sheet).worksheet("Respuestas")
     return sheet
