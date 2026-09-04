@@ -12,12 +12,13 @@ st.set_page_config(
 st.title("📋 Evaluación de Emprendimientos")
 st.caption("Exposición de Proyectos de 5to Año")
 
-# Conexión con Google Sheets (Corrigiendo saltos de línea en la private_key)
-if "gsheets" in st.secrets and "private_key" in st.secrets["gsheets"]:
-    # Reemplaza los \n literales por saltos de línea reales
-    st.secrets["gsheets"]["private_key"] = st.secrets["gsheets"]["private_key"].replace("\\n", "\n")
+# Cargar y formatear credenciales desde Streamlit Secrets
+creds_dict = dict(st.secrets["connections"]["gsheets"])
+if "private_key" in creds_dict:
+    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
 
-conn = st.connection("gsheets", type=GSheetsConnection)
+# Conexión pasándole las credenciales corregidas
+conn = st.connection("gsheets", type=GSheetsConnection, **creds_dict)
 
 def cargar_datos():
     try:
