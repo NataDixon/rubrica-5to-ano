@@ -101,7 +101,7 @@ with tab_evaluar:
             "Grupo 9 - TENTACIÓN EXTREMA",
             "Grupo 10 - EL RINCON DE LA MADERA",
             "Grupo 11 - ARTE EN MASA",
-            "Grupo 12 - REMELOCOS",
+            "Grupo 12 - ESTAMPAAMIGOS",
             "Grupo 13 - BATIPOWER",
             "Grupo 14 - DELICIAS SALUDABLES",
             "Grupo 15 - MAKEUP LAIMIL",
