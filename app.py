@@ -19,21 +19,14 @@ st.caption("Exposición de Proyectos de 5to Año")
 @st.cache_resource
 @st.cache_resource
 @st.cache_resource
+@st.cache_resource
 def obtener_conexion_gsheets():
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
     
-    # Copiamos el diccionario de credenciales
     secrets_dict = dict(st.secrets["connections"]["gsheets"])
-    
-    if "private_key" in secrets_dict:
-        pk = str(secrets_dict["private_key"])
-        # Limpia comillas, espacios externos y des-escapa las barras
-        pk = pk.replace("\\n", "\n").replace('\\"', '"').strip('"').strip("'").strip()
-        secrets_dict["private_key"] = pk
-        
     creds = Credentials.from_service_account_info(secrets_dict, scopes=scopes)
     client = gspread.authorize(creds)
     
